@@ -1,11 +1,11 @@
-# Triage with any model on GitHub Models (free tier, uses GITHUB_TOKEN). Posts suggestions; changes nothing.
+# Triage with any OpenAI-compatible LLM (secrets LLM_BASE_URL, LLM_API_KEY). Posts suggestions; changes nothing.
 name: Triage
 on:
   workflow_dispatch:
     inputs:
-      model: {description: "GitHub Models id", default: "openai/gpt-4.1"}
+      model: {description: "Model id at your LLM_BASE_URL", default: "gemini-2.5-flash"}
       scope: {description: "Milestone to triage, or 'all'", default: "all"}
-permissions: {issues: write, contents: read, models: read}
+permissions: {issues: write, contents: read}
 jobs:
   triage:
     runs-on: ubuntu-latest
@@ -17,3 +17,5 @@ jobs:
           REPO: "${{ github.repository }}"
           MODEL: "${{ inputs.model }}"
           SCOPE: "${{ inputs.scope }}"
+          LLM_BASE_URL: "${{ secrets.LLM_BASE_URL }}"
+          LLM_API_KEY: "${{ secrets.LLM_API_KEY }}"

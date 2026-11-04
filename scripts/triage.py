@@ -1,7 +1,14 @@
-"""Ask any GitHub Models model to suggest priorities and quarters. Posts one comment issue; edits nothing."""
+"""Ask any LLM with an OpenAI-compatible API to suggest priorities and quarters. Posts one issue; edits nothing.
+
+Set repo secrets LLM_BASE_URL, LLM_API_KEY and the workflow input `model`. Free examples:
+  Gemini:     https://generativelanguage.googleapis.com/v1beta/openai   model gemini-2.5-flash
+  OpenRouter: https://openrouter.ai/api/v1                              model <any ':free' model>
+  Groq:       https://api.groq.com/openai/v1                            model llama-3.3-70b-versatile
+"""
 import json, os, subprocess, urllib.error, urllib.request
 
-repo, model, scope = os.environ["REPO"], os.environ.get("MODEL", "openai/gpt-4.1"), os.environ.get("SCOPE", "all")
+repo, model, scope = os.environ["REPO"], os.environ["MODEL"], os.environ.get("SCOPE", "all")
+base, key = os.environ["LLM_BASE_URL"].rstrip("/"), os.environ["LLM_API_KEY"]
 args = ["gh", "issue", "list", "-R", repo, "--state", "open", "--limit", "300", "--json", "number,title,labels,milestone,body"]
 if scope != "all":
     args += ["--milestone", scope]
@@ -14,17 +21,16 @@ prompt = (f"You triage a solo developer's task list. Rules:{rules}\n"
           "Return a markdown table: #, title, impact, urgency, effort, suggested priority, suggested quarter, one-line reason. "
           "Then list the 5 tasks to do next, in order, and any tasks that should be merged or split.\n\n"
           f"Tasks (JSON):\n{json.dumps(tasks)}")
-req = urllib.request.Request("https://models.github.ai/inference/chat/completions",
+req = urllib.request.Request(f"{base}/chat/completions",
                              data=json.dumps({"model": model, "messages": [{"role": "user", "content": prompt}]}).encode(),
-                             headers={"Authorization": f"Bearer {os.environ['GH_TOKEN']}", "Content-Type": "application/json",
-                                      "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"})
+                             headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"})
 try:
     raw = urllib.request.urlopen(req, timeout=120).read().decode()
 except urllib.error.HTTPError as e:
-    raise SystemExit(f"GitHub Models {e.code}: {e.read().decode()[:500]}")
+    raise SystemExit(f"the LLM API {e.code}: {e.read().decode()[:500]}")
 try:
     answer = json.loads(raw)["choices"][0]["message"]["content"]
 except (ValueError, KeyError, IndexError):
-    raise SystemExit(f"Unexpected GitHub Models response: {raw[:500]!r}")
+    raise SystemExit(f"Unexpected the LLM API response: {raw[:500]!r}")
 subprocess.run(["gh", "issue", "create", "-R", repo, "--label", "digest", "--title", f"Triage suggestions ({model}, {scope})",
                 "--body", answer + "\n\n_Suggestions only. Apply the ones you agree with on the board._"], check=True)
