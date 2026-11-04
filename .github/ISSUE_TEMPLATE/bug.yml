@@ -1,0 +1,17 @@
+name: Bug
+description: Something is broken
+labels: [bug]
+body:
+  - type: input
+    id: repo
+    attributes: {label: Code repo, placeholder: Intently-app/ThinkFast-iOS}
+  - type: textarea
+    id: what
+    attributes: {label: What happens vs what should happen}
+    validations: {required: true}
+  - type: textarea
+    id: repro
+    attributes: {label: Steps to reproduce}
+  - type: textarea
+    id: evidence
+    attributes: {label: Evidence (logs, CI run, screenshots)}

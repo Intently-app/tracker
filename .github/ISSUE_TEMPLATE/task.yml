@@ -1,0 +1,21 @@
+name: Task
+description: Something to do
+title: "<verb> <object>"
+body:
+  - type: dropdown
+    id: project
+    attributes: {label: Project, options: [Respite, Other]}
+  - type: input
+    id: repo
+    attributes: {label: Code repo, description: "owner/repo, any account", placeholder: Fa-d/intently-extension}
+  - type: textarea
+    id: context
+    attributes: {label: Context, description: What and why}
+    validations: {required: true}
+  - type: textarea
+    id: done
+    attributes: {label: Done when}
+    validations: {required: true}
+  - type: input
+    id: next
+    attributes: {label: Next step}

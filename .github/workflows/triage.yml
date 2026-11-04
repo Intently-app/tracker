@@ -1,0 +1,19 @@
+# Triage with any model on GitHub Models (free tier, uses GITHUB_TOKEN). Posts suggestions; changes nothing.
+name: Triage
+on:
+  workflow_dispatch:
+    inputs:
+      model: {description: "GitHub Models id", default: "openai/gpt-4.1"}
+      scope: {description: "Milestone to triage, or 'all'", default: "all"}
+permissions: {issues: write, contents: read, models: read}
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/triage.py
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          REPO: "${{ github.repository }}"
+          MODEL: "${{ inputs.model }}"
+          SCOPE: "${{ inputs.scope }}"

@@ -1,0 +1,13 @@
+# Event: owner selects a task (label agent:ready) -> acknowledge with the queue command.
+name: Selected
+on:
+  issues: {types: [labeled]}
+permissions: {issues: write}
+jobs:
+  ack:
+    if: github.event.label.name == 'agent:ready'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          gh issue comment "$N" -R "$REPO" --body "Queued for an agent. In any agent CLI: \"work the hub queue\" (rules in AGENTS.md)."
+        env: {GH_TOKEN: "${{ github.token }}", REPO: "${{ github.repository }}", N: "${{ github.event.issue.number }}"}

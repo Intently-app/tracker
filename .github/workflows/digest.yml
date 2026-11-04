@@ -1,0 +1,15 @@
+# Weekly digest: no LLM, no secrets. Opens one issue listing what is blocked, owner-only, selected, stale.
+name: Weekly digest
+on:
+  schedule: [{cron: "0 6 * * 1"}]
+  workflow_dispatch:
+permissions: {issues: write, contents: read}
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/digest.py > digest.md
+        env: {GH_TOKEN: "${{ github.token }}", REPO: "${{ github.repository }}"}
+      - run: gh issue create -R "$REPO" --title "Digest $(date -u +%F)" --label digest --body-file digest.md
+        env: {GH_TOKEN: "${{ github.token }}", REPO: "${{ github.repository }}"}
