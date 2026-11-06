@@ -9,7 +9,7 @@ task. The board is the GitHub Project **Hub** (`gh project view 2 --owner Fa-d -
 
 | What | Where |
 |---|---|
-| Tasks | issues in `Fa-d/tracker` |
+| Tasks | issues in `Intently-app/tracker` |
 | Quarter | milestone `Q4-2026`, `Q1-2027`, … (also the project field `Quarter`) |
 | Platform / area | labels `platform:*`, `area:*`, `bug` |
 | Status | project field `Status`: Todo, In progress, Blocked, Done (closing an issue = Done) |
@@ -21,9 +21,9 @@ task. The board is the GitHub Project **Hub** (`gh project view 2 --owner Fa-d -
 
 ## At the start of a session
 
-1. Read the queue: `gh issue list -R Fa-d/tracker --label agent:ready --state open`.
+1. Read the queue: `gh issue list -R Intently-app/tracker --label agent:ready --state open`.
 2. If the owner asked for something specific, find its issue first:
-   `gh issue list -R Fa-d/tracker --search "<words>" --state all`. If there is none, create one before
+   `gh issue list -R Intently-app/tracker --search "<words>" --state all`. If there is none, create one before
    starting work (see "Filing").
 
 ## While working
@@ -31,7 +31,7 @@ task. The board is the GitHub Project **Hub** (`gh project view 2 --owner Fa-d -
 - Comment on the issue when you start, with what you plan to do. Remove `agent:ready`. Set Status to
   In progress.
 - Do the work in the repo named in `Code repo`. Reference the task in commits and PRs as
-  `Fa-d/tracker#<n>` (a full reference works across accounts).
+  `Intently-app/tracker#<n>` (a full reference works across accounts).
 - Never do anything under `needs:human` yourself. Write the exact steps for the owner in a comment.
 
 ## At the end of every session (required)
@@ -51,7 +51,7 @@ Also file, before you stop:
 
 ## Filing
 
-`gh issue create -R Fa-d/tracker --title "<verb + object>" --milestone <quarter> --label platform:<x> --label area:<y> --body "<context, done when, next step>"`,
+`gh issue create -R Intently-app/tracker --title "<verb + object>" --milestone <quarter> --label platform:<x> --label area:<y> --body "<context, done when, next step>"`,
 then `gh project item-add 2 --owner Fa-d --url <issue url>` and set the fields. Before creating an
 issue, search for an existing one. Titles start with a verb. The body ends with **Done when:**.
 
