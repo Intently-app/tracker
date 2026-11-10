@@ -38,7 +38,7 @@ task. The board is the GitHub Project **Hub** (`gh project view 2 --owner Fa-d -
 
 For each issue you touched:
 - **Done and verified:** close it with a comment that says what changed, where (commit, PR, deploy
-  id), and how it was verified.
+  id), and how it was verified. Work that sits on a branch is not done yet: see "Finished code" below.
 - **Partly done:** comment with done / not done / exact next step. Update the `Next step` field.
 - **Waiting:** add `blocked`, set Status Blocked, and fill `Blocked on` (who or what, and since when).
 
@@ -48,6 +48,23 @@ Also file, before you stop:
 - every step you handed to the owner (label `needs:human`).
 
 **Never leave state only in chat.** If it isn't in an issue, it is lost.
+
+## Finished code: the pull request is the trigger
+
+Code is done when it is on `main`, not when the branch is pushed. Agents never merge and never close
+a finished code task by hand. The pull request does both:
+
+1. Push the branch and open a pull request. Put `Closes Intently-app/tracker#<n>` in its description
+   and add the label `auto:merge`.
+2. Comment on the issue with what changed, the commit, the pull request and the test result. Leave it
+   open, Status In progress, `Next step`: "merges itself when checks pass".
+3. When the pull request's checks pass it merges itself, and the merge closes the issue with a comment
+   pointing at the merge commit.
+
+If something is left (an owner-only step, a failing check, a follow-up), write `Part of
+Intently-app/tracker#<n>` instead of `Closes`, so the merge does not close the issue. A pull request
+that changes `.github/` never auto-merges; the owner merges it. In a repo that has no `auto:merge`
+workflow yet, open the pull request the same way and write "owner: merge" in `Next step`.
 
 ## Filing
 
