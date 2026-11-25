@@ -1,0 +1,64 @@
+{
+  "_comment": "One board per project (tracker#281). scripts/boards.py reads this; `boards.py new <slug> <Name>` adds an entry. Issues carry the label project:<slug>; chores carry `chore` and stay off every board.",
+  "owner": "Fa-d",
+  "repo": "Intently-app/tracker",
+  "hub": 2,
+  "projects": [
+    {
+      "slug": "respite",
+      "name": "Respite",
+      "label": "project:respite",
+      "board": 3,
+      "repos": [
+        "Intently-app/respite-api",
+        "Intently-app/ThinkFast-Android",
+        "Intently-app/ThinkFast-iOS",
+        "Intently-app/intently-extension",
+        "Intently-app/intently",
+        "Intently-app/respite-docs"
+      ],
+      "issues": [
+        44,
+        241,
+        242
+      ]
+    },
+    {
+      "slug": "hisab",
+      "name": "Hisab",
+      "label": "project:hisab",
+      "board": 4,
+      "repos": [],
+      "issues": [
+        70,
+        72,
+        90,
+        92,
+        97,
+        117,
+        120
+      ],
+      "title_keywords": [
+        "hisab"
+      ]
+    },
+    {
+      "slug": "platform",
+      "name": "Intently Platform",
+      "label": "project:platform",
+      "board": 6,
+      "repos": [],
+      "issues": [
+        85,
+        95,
+        176,
+        279,
+        280,
+        281,
+        282,
+        283,
+        284
+      ]
+    }
+  ]
+}
