@@ -203,13 +203,17 @@ def cmd_sync(conf, apply):
     hub = Board(conf["owner"], conf["hub"])
     boards = {p["slug"]: Board(conf["owner"], p["board"]) for p in conf["projects"]}
     by_label = {p["label"]: p["slug"] for p in conf["projects"]}
-    stats = {"added": 0, "removed": 0, "mirrored": 0}
+    stats = {"added": 0, "removed": 0, "mirrored": 0, "failed": 0}
     unlabelled = []
 
     def act(msg, fn, *a):
         print(("" if apply else "would: ") + msg)
         if apply:
-            fn(*a)
+            try:
+                fn(*a)
+            except RuntimeError as e:  # one bad item (e.g. an issue moved to another repo mid-run) must not stop the sync
+                stats["failed"] += 1
+                print(f"  WARN {e}")
 
     for i in issues:
         url, lab = i["url"], labels_of(i)
@@ -225,12 +229,18 @@ def cmd_sync(conf, apply):
                 stats["added"] += 1
                 print(("" if apply else "would: ") + f"add #{i['number']} to {slug}")
                 if apply:
-                    b.add(url)
-                    src = hub.items.get(url) or {}
-                    for f in MIRRORED_FIELDS:
-                        b.set(url, f, Board.value(src, f))
-                    if i["state"] == "CLOSED":
-                        b.set(url, "Status", "Done")
+                    def add_with_fields(b=b, url=url, closed=i["state"] == "CLOSED"):
+                        b.add(url)
+                        src = hub.items.get(url) or {}
+                        for f in MIRRORED_FIELDS:
+                            b.set(url, f, Board.value(src, f))
+                        if closed:
+                            b.set(url, "Status", "Done")
+                    try:
+                        add_with_fields()
+                    except RuntimeError as e:
+                        stats["failed"] += 1
+                        print(f"  WARN {e}")
             elif on and (chore or slug not in want):
                 stats["removed"] += 1
                 act(f"remove #{i['number']} from {slug} ({'chore' if chore else 'not ' + slug})", b.remove, url)
@@ -250,7 +260,7 @@ def cmd_sync(conf, apply):
                     stats["mirrored"] += 1
                     act(f"Hub Status of #{i['number']}: {hs} -> {bs} (from {slug})", hub.set, url, "Status", bs)
             break
-    print(f"\n{stats['added']} add, {stats['removed']} remove, {stats['mirrored']} Status mirror"
+    print(f"\n{stats['added']} add, {stats['removed']} remove, {stats['mirrored']} Status mirror, {stats['failed']} failed"
           f"{'' if apply else ' (dry run)'}")
     if unlabelled:
         print("\nOpen issues with no project:* label (run backfill or label by hand):")
