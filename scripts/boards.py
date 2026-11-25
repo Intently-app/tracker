@@ -16,6 +16,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -27,7 +28,17 @@ MIRRORED_FIELDS = ["Status", "Priority", "Size", "Quarter", "Blocked on", "Next 
 VERIFY_MARK = re.compile(r"<!-- respite-verify v1 head=[0-9a-f]{40} issue=([A-Za-z0-9._/-]+#\d+) verdict=PASS -->")
 
 
+WRITES = {("project", "item-add"), ("project", "item-edit"), ("project", "item-delete"), ("issue", "edit")}
+WRITE_GAP = float(os.environ.get("BOARDS_WRITE_GAP", "0.9"))  # seconds; GitHub's secondary limit is ~80 writes a minute
+_last_write = [0.0]
+
+
 def gh(*args, parse=True, check=True):
+    if tuple(args[:2]) in WRITES:  # pace writes so a big sync never trips the secondary rate limit
+        wait = _last_write[0] + WRITE_GAP - time.monotonic()
+        if wait > 0:
+            time.sleep(wait)
+        _last_write[0] = time.monotonic()
     r = subprocess.run(["gh", *args], capture_output=True, text=True)
     if check and r.returncode != 0:
         raise RuntimeError(f"gh {' '.join(args)}: {r.stderr.strip()}")
