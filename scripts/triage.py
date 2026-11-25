@@ -9,10 +9,17 @@ import json, os, subprocess, urllib.error, urllib.request
 
 repo, model, scope = os.environ["REPO"], os.environ["MODEL"], os.environ.get("SCOPE", "all")
 base, key = os.environ["LLM_BASE_URL"].rstrip("/"), os.environ["LLM_API_KEY"]
-args = ["gh", "issue", "list", "-R", repo, "--state", "open", "--limit", "300", "--json", "number,title,labels,milestone,body"]
+args = ["gh", "issue", "list", "-R", repo, "--state", "open", "--limit", "300", "--json", "number,title,labels,milestone,body,author"]
 if scope != "all":
     args += ["--milestone", scope]
-issues = [i for i in json.loads(subprocess.check_output(args)) if not any(l["name"] == "digest" for l in i["labels"])]
+# The repo is public: only the owner's and the bots' issues reach the LLM (anyone else's text could carry
+# instructions). OWNERS: comma-separated logins, default the repo owner account.
+owners = {o.strip().lower() for o in os.environ.get("OWNERS", "Fa-d").split(",") if o.strip()}
+def trusted(i):
+    login = ((i.get("author") or {}).get("login") or "").lower()
+    return login in owners or login.endswith("[bot]") or login.startswith("app/")
+issues = [i for i in json.loads(subprocess.check_output(args))
+          if trusted(i) and not any(l["name"] == "digest" for l in i["labels"])]
 tasks = [{"n": i["number"], "title": i["title"], "labels": [l["name"] for l in i["labels"]],
           "quarter": (i["milestone"] or {}).get("title"), "body": (i["body"] or "")[:600]} for i in issues]
 rules = open("AGENTS.md").read().split("## Prioritising (any LLM)")[1]
